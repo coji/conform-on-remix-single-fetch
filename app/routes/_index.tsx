@@ -1,41 +1,32 @@
-import type { MetaFunction } from "@remix-run/node";
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { Form, useActionData } from "@remix-run/react";
+import { z } from "zod";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+const schema = z.object({
+  name: z.string(),
+});
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const submission = parseWithZod(await request.formData(), { schema });
+  return { lastRusult: submission.reply() };
 };
 
 export default function Index() {
+  const actionData = useActionData<typeof action>();
+  const [form, { name }] = useForm({
+    lastResult: actionData?.lastResult,
+    onValidate: ({ formData }) => parseWithZod(formData, { schema }),
+  });
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
+      <Form method="POST" {...getFormProps(form)}>
+        <input {...getInputProps(name, { type: "text" })} />
+        <button>submit</button>
+      </Form>
     </div>
   );
 }

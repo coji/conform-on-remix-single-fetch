@@ -10,7 +10,7 @@ const schema = z.object({
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const submission = parseWithZod(await request.formData(), { schema });
-  return { lastRusult: submission.reply() };
+  return { lastResult: submission.reply() };
 };
 
 export default function Index() {
